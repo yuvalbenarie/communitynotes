@@ -25,7 +25,7 @@ class TSVReaderBase(abc.ABC):
         names=self._columns,
       )
     except ValueError:
-      _logger.info("Failed to read the following columns from %s: %s.", self._path, self._columns)
+      _logger.info("The file %s might contain a header row. Re-reading without forced column names.", self._path)
       # If failed, assume there is a header row and verify the names after the file is read.
       results = pd.read_csv(
         filepath_or_buffer=self._path,
