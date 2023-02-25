@@ -1,10 +1,17 @@
 from typing import Optional, Tuple
 
-import constants as c, contributor_state, helpfulness_scores, matrix_factorization, note_ratings, note_status_history, process_data
-
 import numpy as np
 import pandas as pd
 import torch
+
+import constants as c
+import contributor_state
+import helpfulness_scores
+import matrix_factorization
+import note_ratings
+import note_status_history
+import process_data
+import ratings_filters
 
 
 def note_post_processing(
@@ -152,7 +159,7 @@ def run_algorithm(
 
   # Removes ratings where either (1) the note did not receive enough ratings, or
   # (2) the rater did not rate enough notes.
-  ratingsForTraining = process_data.filter_ratings(ratings)
+  ratingsForTraining = ratings_filters.FilterRatingsForTraining.filter(ratings=ratings)
 
   # TODO: Save parameters from this first run in note_model_output next time we add extra fields to model output TSV.
   noteParamsUnfiltered, raterParamsUnfiltered, globalBias = matrix_factorization.run_mf(

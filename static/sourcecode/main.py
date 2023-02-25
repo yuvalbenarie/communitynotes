@@ -1,8 +1,12 @@
 import argparse
 import logging
 
-import algorithm, constants as c, process_data
+import algorithm
+import constants
+import process_data
+import tsv_writers
 
+_logger = logging.getLogger(__name__)
 
 """
 Example Usage:
@@ -26,17 +30,17 @@ def get_args():
   """
   parser = argparse.ArgumentParser(description="Birdwatch Algorithm.")
   parser.add_argument(
-    "-e", "--enrollment", default=c.enrollmentInputPath, help="user enrollment dataset"
+    "-e", "--enrollment", default=constants.enrollmentInputPath, help="user enrollment dataset"
   )
-  parser.add_argument("-n", "--notes_path", default=c.notesInputPath, help="note dataset")
-  parser.add_argument("-r", "--ratings_path", default=c.ratingsInputPath, help="rating dataset")
+  parser.add_argument("-n", "--notes_path", default=constants.notesInputPath, help="note dataset")
+  parser.add_argument("-r", "--ratings_path", default=constants.ratingsInputPath, help="rating dataset")
   parser.add_argument(
     "-s",
     "--note_status_history_path",
-    default=c.noteStatusHistoryInputPath,
+    default=constants.noteStatusHistoryInputPath,
     help="note status history dataset",
   )
-  parser.add_argument("-o", "--output_path", default=c.scoredNotesOutputPath, help="output path")
+  parser.add_argument("-o", "--output_path", default=constants.scoredNotesOutputPath, help="output path")
   return parser.parse_args()
 
 
@@ -46,12 +50,20 @@ def run_scoring():
   reading data and writing scored output; mean to be invoked from main.
   """
   args = get_args()
-  _, ratings, noteStatusHistory, userEnrollment = process_data.get_data(
-    args.notes_path, args.ratings_path, args.note_status_history_path, args.enrollment
+  data_loader = process_data.DataLoader(
+    notesPath=args.notes_path,
+    ratingsPath=args.ratings_path,
+    noteStatusHistoryPath=args.note_status_history_path,
+    userEnrollmentPath=args.enrollment,
   )
-  scoredNotes, _, _, _ = algorithm.run_algorithm(ratings, noteStatusHistory, userEnrollment)
-  process_data.write_tsv_local(scoredNotes, c.scoredNotesOutputPath)
-  print("Finished.")
+  data_loader.load()
+  scoredNotes, _, _, _ = algorithm.run_algorithm(
+    ratings=data_loader.ratings,
+    noteStatusHistory=data_loader.notes_status_history,
+    userEnrollment=data_loader.user_enrollments,
+  )
+  tsv_writers.DataFrameTSVWriter(path=constants.scoredNotesOutputPath).write(df=scoredNotes)
+  _logger.info("Finished.")
 
 
 if __name__ == "__main__":
