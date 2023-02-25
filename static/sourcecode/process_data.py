@@ -1,12 +1,12 @@
 from io import StringIO
 from typing import Tuple
 
-import constants as c, note_status_history
-
-from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
+import constants as c, note_status_history
+import tsv_readers
 
 def get_data(
   notesPath: str,
@@ -67,14 +67,6 @@ def read_from_strings(
   return notes, ratings, noteStatusHistory
 
 
-def tsv_reader(path: str, mapping, columns):
-  try:
-    return pd.read_csv(path, sep="\t", dtype=mapping, names=columns)
-  except ValueError as e:
-    print(e)
-    return pd.read_csv(path, sep="\t", dtype=mapping)
-
-
 def read_from_tsv(
   notesPath: str,
   ratingsPath: str,
@@ -91,41 +83,10 @@ def read_from_tsv(
   Returns:
       Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]: notes, ratings, noteStatusHistory, userEnrollment
   """
-  notes = tsv_reader(notesPath, c.noteTSVTypeMapping, c.noteTSVColumns)
-  ratings = tsv_reader(ratingsPath, c.ratingTSVTypeMapping, c.ratingTSVColumns)
-  noteStatusHistory = tsv_reader(
-    noteStatusHistoryPath, c.noteStatusHistoryTSVTypeMapping, c.noteStatusHistoryTSVColumns
-  )
-  userEnrollment = tsv_reader(
-    userEnrollmentPath, c.userEnrollmentTSVTypeMapping, c.userEnrollmentTSVColumns
-  )
-
-  assert len(notes.columns) == len(c.noteTSVColumns) and all(notes.columns == c.noteTSVColumns), (
-    f"note columns don't match: \n{[col for col in notes.columns if not col in c.noteTSVColumns]} are extra columns, "
-    + f"\n{[col for col in c.noteTSVColumns if not col in notes.columns]} are missing."
-  )  # ensure constants file is up to date.
-
-  assert len(ratings.columns.values) == len(c.ratingTSVColumns) and all(
-    ratings.columns == c.ratingTSVColumns
-  ), (
-    f"ratings columns don't match: \n{[col for col in ratings.columns if not col in c.ratingTSVColumns]} are extra columns, "
-    + f"\n{[col for col in c.ratingTSVColumns if not col in ratings.columns]} are missing."
-  )  # ensure constants file is up to date.
-
-  assert len(noteStatusHistory.columns.values) == len(c.noteStatusHistoryTSVColumns) and all(
-    noteStatusHistory.columns == c.noteStatusHistoryTSVColumns
-  ), (
-    f"noteStatusHistory columns don't match: \n{[col for col in noteStatusHistory.columns if not col in c.noteStatusHistoryTSVColumns]} are extra columns, "
-    + f"\n{[col for col in c.noteStatusHistoryTSVColumns if not col in noteStatusHistory.columns]} are missing."
-  )
-
-  assert len(userEnrollment.columns.values) == len(c.userEnrollmentTSVColumns) and all(
-    userEnrollment.columns == c.userEnrollmentTSVColumns
-  ), (
-    f"userEnrollment columns don't match: \n{[col for col in userEnrollment.columns if not col in c.userEnrollmentTSVColumns]} are extra columns, "
-    + f"\n{[col for col in c.userEnrollmentTSVColumns if not col in userEnrollment.columns]} are missing."
-  )
-
+  notes = tsv_readers.NotesTSVReader(path=notesPath).read()
+  ratings = tsv_readers.RatingsTSVReader(path=ratingsPath).read()
+  noteStatusHistory = tsv_readers.NotesStatusHistoryTSVReader(path=noteStatusHistoryPath).read()
+  userEnrollment = tsv_readers.UserEnrollmentsTSVReader(path=userEnrollmentPath).read()
   return notes, ratings, noteStatusHistory, userEnrollment
 
 
