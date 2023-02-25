@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 import algorithm, constants as c, process_data
 
@@ -11,6 +12,10 @@ Example Usage:
     --ratings_path ratings-00000.tsv \
     --note_status_history_path noteStatusHistory-00000.tsv
 """
+
+
+def setup_logging() -> None:
+  logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 
 def get_args():
@@ -50,4 +55,5 @@ def run_scoring():
 
 
 if __name__ == "__main__":
+  setup_logging()
   run_scoring()
