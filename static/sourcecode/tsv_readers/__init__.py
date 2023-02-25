@@ -4,8 +4,8 @@ from .ratings_tsv_reader import RatingsTSVReader
 from .user_enrollments_tsv_reader import UserEnrollmentsTSVReader
 
 __all__ = (
-    NotesStatusHistoryTSVReader,
-    NotesTSVReader,
-    RatingsTSVReader,
-    UserEnrollmentsTSVReader,
+  NotesStatusHistoryTSVReader,
+  NotesTSVReader,
+  RatingsTSVReader,
+  UserEnrollmentsTSVReader,
 )
